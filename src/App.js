@@ -1,89 +1,95 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
 
-import TabList from './TabList';
-import Tab from './Tab';
-
-import { Button, Spinner } from '@blueprintjs/core';
+import { Button } from '@blueprintjs/core';
 
 import '@blueprintjs/core/lib/css/blueprint.css';
 
 
-class MyTabList extends Component {
-  render() {
-    const { data, loading } = this.props;
+class LandingPage extends React.Component {
+  state = {
+    order: 1
+  };
 
-    const tabs = data.map((d) => {
-      return (
-        <Tab title={d.title}>
-          {d.body}
-        </Tab>
+  nextPage = () => {
+    this.setState((prevProps) => {
+      return {
+        order: this.state.order + 1
+      }
+    });
+  };
+
+  render() {
+    const { children } = this.props;
+
+    console.log(this.state.order);
+
+    const selected = React.Children.toArray(children)[this.state.order].props.title;
+
+    const headers = React.Children.map(children, (child) => {
+      const { title } = child.props;
+      return (<li 
+        class="bp3-tab" 
+        role="tab"
+        aria-selected={selected === title}
+      >{title}</li>);
+    });
+
+    const panels = React.Children.map(children, (child) => {
+      const { title } = child.props;
+      return React.cloneElement(
+        child,
+        { 'hidden': (title !== selected) },
       );
     });
 
     return (
-      <TabList>
-        {tabs}
-      </TabList>
+      <div class="bp3-tabs">
+        <ul class="bp3-tab-list .modifier" role="tablist">
+          {headers}
+        </ul>
+        {panels}
+        <Button onClick={this.nextPage}>Continue</Button>
+      </div>      
     );
   }
 }
 
-const withLoadingHandling = (WrappedComponent) => {
-  return class extends React.Component {
-    render () {
-      const { loading, ...rest } = this.props;
+const Step = (props) => {
+  const {hidden} = props;
+  return <div style={hidden ? {display: 'none'} : {}} class="bp3-tab-panel" role="tabpanel">
+    {props.children}
+  </div>
+};
 
-      return loading ? 
-        (<Spinner />) :
-        (<WrappedComponent {...rest} />)
-    }
-  };
-}
-
-const WrappedTabList = withLoadingHandling(MyTabList);
-
-class App extends Component {
-
-  state = {
-    data: [
-      {title: 'Selected tab', body: 'I wuz selected'},
-      {title: 'Another tab', body: 'another tab'},
-      {title: 'Another another tab', body: 'fail'},
-    ],
-    loading: false
-  };
-
-  fetchData = () => {
-
-    this.setState({loading: true}, () => {
-      window.setTimeout(() => {
-        this.setState({
-          data: [
-            {title: 'New tab', body: 'I feel reborn'},
-            {title: 'Another new tab', body: 'another tab'},
-            {title: 'New new tab', body: 'fail'}
-          ],
-          loading: false
-        });
-      }, 2000);
-    });
-  };
-
+class App extends React.Component {
   render() {
     return (
-      <div className="App">
-        <WrappedTabList
-          data={this.state.data}
-          loading={this.state.loading}
-        />
-        <Button icon="add" onClick={this.fetchData}>
-          Kick off
-        </Button>
-      </div>
+      <LandingPage>
+        <Step title="Name">
+          <form>
+            <input /> <label>First name</label>
+            <input /> <label>Last name</label>
+          </form>
+        </Step>
+        <Step title="Address">
+          <form>
+            <input /> <label>Address</label>
+          </form>        
+        </Step>
+        <Step title="Age">
+          <form>
+            <input /> <label>Age</label>
+          </form>
+        </Step>
+        <Step title="Favorite book">
+          <form>
+            <input /> <label>Favorite book</label>
+          </form>        
+        </Step>
+      </LandingPage>
     );
   }
 }
+
 
 export default App;
