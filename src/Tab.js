@@ -4,9 +4,9 @@ const Tab = (props) => {
   return (<div
     class="bp3-tab-panel"
     aria-hidden={props.hidden}
-      >{props.children}
-    }
+    >
+      {props.children}
     </div>);
-}
+};
 
 export default Tab;
